@@ -1,0 +1,221 @@
+<!DOCTYPE html>
+<html>
+<head>
+<meta name="viewport" content="width=device-width, initial-scale=1">
+
+<style>
+thead th {
+  position: sticky;
+  top: 0;
+  background: white;
+  z-index: 2;
+}
+
+body {
+  font-size:18px;
+  padding:5px;
+  background:#f5f5f5;
+}
+
+/* 🔥 상단 메뉴 가운데 정렬 */
+.top-menu {
+  display:flex;
+  justify-content:center;
+  gap:5px;
+}
+
+/* 상단 버튼(운행일지기, 전체운행일지) */
+.top-btn {
+  width:auto;
+  padding:8px 12px;
+  margin:3px;
+  font-size:20px;
+  border:none;
+  border-radius:6px;
+  color:white;
+  background:#ccc;
+}
+
+.top-btn.active {
+  background:#ff6b9d;
+}
+
+.date-input{
+
+  padding:8px;
+  font-size:14px;
+}
+
+/* 일반 버튼 */
+button {
+  padding:10px;
+  margin:3px;
+  border:none;
+  border-radius:6px;
+  background:#ddd;
+}
+
+button.active {
+  background:#4CAF50;
+  color:white;
+}
+
+.section { margin-bottom:15px; }
+
+/* 입력폼 */
+input {
+  width:100%;
+  padding:12px 14px;   /* 🔥 위아래 크게 */
+  font-size:16px;      /* 🔥 글자도 키움 */
+  margin-bottom:10px;  /* 🔥 입력칸 간격 */
+}
+
+/* 저장 버튼 */
+#saveBtn {
+  width:100%;
+  padding:14px;
+  font-size:16px;
+  margin-top:10px; /* 🔥 위 간격 */
+}
+
+/* 입력 영역 가운데 */
+#formPage {
+  max-width:600px;  /* 🔥 적당히 넓게 */
+  margin:0 auto;
+  padding:10px;
+}
+
+/* 🔥 전체 운행일지 가운데 */
+#listPage {
+  text-align:center;
+}
+
+/* 테이블 */
+table {
+  width:100%;              /* 🔥 화면 꽉 채움 */
+  table-layout:fixed;      /* 🔥 열 너비 고정 */
+  border-collapse:collapse;
+  background:white;
+}
+
+/* 테이블 글자 가운데 */
+td, th {
+  padding:6px;
+  border:1px solid #ccc;
+  text-align:center;
+  vertical-align:middle;
+
+  overflow:hidden;
+  text-overflow:ellipsis;
+
+  white-space:normal;      /* 🔥 변경 */
+  word-break:break-all;    /* 🔥 추가 */
+}
+th select {
+  width: 100%;
+  max-width: 100%;
+  box-sizing: border-box;
+}
+
+@media (max-width: 768px){
+
+  body {
+    font-size:14px;
+  }
+
+  table {
+    font-size:12px;
+  }
+
+  td, th {
+    padding:4px;
+  }
+
+  button {
+    font-size:12px;
+    padding:6px;
+  }
+
+  input {
+    font-size:14px;
+  }
+
+}
+</style>
+</head>
+
+<body>
+
+<!-- 🔥 상단 -->
+<div class="top-menu">
+  <button id="formBtn" class="top-btn active" onclick="showForm()">운행일지 기록</button>
+  <button id="listBtn" class="top-btn" onclick="showList()">전체 운행일지</button>
+</div>
+
+<!-- 입력 -->
+<div id="formPage">
+
+<div id="carSection" class="section">
+  <h4>🚗 차량 선택(필수)</h4>
+
+  <button onclick="selectCar(this,'니로1 [33구 5653]')">니로 5653</button>
+  <button onclick="selectCar(this,'니로2 [33구 5572]')">니로 5572</button>
+  <button onclick="selectCar(this,'니로3 [63거 6785]')">니로 6785</button>
+
+  <button onclick="selectCar(this,'EV3 [40거 3247]')">EV3 3247</button>
+  <button onclick="selectCar(this,'아이오닉9 [41너 1060]')">아이오닉9</button>
+
+  <button onclick="selectCar(this,'스타리아1 [815서 1036]')">스타 1036</button>
+  <button onclick="selectCar(this,'스타리아2 [80더 4356]')">스타 4356</button>
+
+  <button onclick="selectCar(this,'윙(리프트) [84루 0891]')">윙 0891</button>
+
+  <button onclick="selectCar(this,'BYD 윙바디1 [97러 2092]')">BYD2092</button>
+  <button onclick="selectCar(this,'BYD 윙바디2 [97러 1951]')">BYD1951</button>
+
+  <button onclick="selectCar(this,'스타리아3 [95더 5318]')">스타 5318</button>
+  <button onclick="selectCar(this,'스타리아4 [95더 5342]')">스타 5342 </button>
+</div>
+
+<div id="nameSection" class="section">
+  <h4>👤 운행자 선택(필수)</h4>
+
+  <button onclick="selectName(this,'임정근')">임정근</button>
+ <button onclick="selectName(this,'곽은')" style="letter-spacing:6px;">곽은</button>
+  <button onclick="selectName(this,'문진기')">문진기</button>
+  <button onclick="selectName(this,'김대균')">김대균</button>
+    <button onclick="selectName(this,'김윤배')">김윤배</button>
+  <button onclick="selectName(this,'김승국')">김승국</button>
+  <button onclick="selectName(this,'여승걸')">여승걸</button>
+    <button onclick="selectName(this,'노정환')">노정환</button>
+<button onclick="selectName(this,'박영진')">박영진</button>  
+  <button onclick="selectName(this,'장대성')">장대성</button>
+  <button onclick="selectName(this,'이기로')">이기로</button>
+  <button onclick="selectName(this,'서덕원')">서덕원</button>
+  <button onclick="selectName(this,'이현명')">이현명</button>
+  <button onclick="selectName(this,'김동훈')">김동훈</button>
+   <button onclick="selectName(this,'이선우')">이선우</button>
+  <button onclick="selectName(this,'최인혁')">최인혁</button>
+  <button onclick="selectName(this,'이경준')">이경준</button>  
+</div>
+
+<input id="start" placeholder="출발지">
+<input id="end" placeholder="도착지">
+<input id="km" placeholder="km (필수)" oninput="checkKm()">
+<input id="note" placeholder="비고">
+
+<button id="saveBtn" onclick="save()">저장</button>
+
+</div>
+
+<!-- 목록 -->
+<div id="listPage" style="display:none;">
+<div id="list"></div>
+</div>
+
+<?!= include('app1'); ?>
+<?!= include('app2'); ?>
+<?!= include('app3'); ?>
+
+</body>
+</html>

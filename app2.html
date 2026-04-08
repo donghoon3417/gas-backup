@@ -1,0 +1,74 @@
+<script>
+let sortCol = -1;
+let sortAsc = true;
+let currentPage = 1;
+const rowsPerPage = 10;
+
+// 필터
+function applyFilter(){
+  currentPage = 1;
+  applyFilterWithoutReset();
+}
+
+// 🔥 실제 필터 + 정렬 + 페이지
+function applyFilterWithoutReset(){
+
+  const selects = document.querySelectorAll("th select");
+
+  const car = selects[0]?.value || "";
+  const name = selects[1]?.value || "";
+
+  const startDate = document.getElementById("startDate")?.value;
+  const endDate = document.getElementById("endDate")?.value;
+
+  let filtered = fullData.slice(1);
+
+  filtered = filtered.filter(row=>{
+    if(car && row[1] !== car) return false;
+    if(name && row[2] !== name) return false;
+    return true;
+  });
+
+  if(startDate){
+    filtered = filtered.filter(row=> row[0] >= startDate);
+  }
+  if(endDate){
+    filtered = filtered.filter(row=> row[0] <= endDate);
+  }
+
+  if(sortCol !== -1){
+    filtered.sort((a,b)=>{
+      let A = a[sortCol];
+      let B = b[sortCol];
+
+      if(!isNaN(A) && !isNaN(B)){
+        return sortAsc ? A-B : B-A;
+      }
+      return sortAsc ? A.localeCompare(B) : B.localeCompare(A);
+    });
+  }
+
+  drawTable(filtered); // 👉 UI는 app3 담당
+}
+
+// 정렬
+function sortTable(col){
+  if(sortCol === col){
+    sortAsc = !sortAsc;
+  }else{
+    sortCol = col;
+    sortAsc = true;
+  }
+  applyFilter();
+}
+
+// 페이지 이동
+function changePage(dir, totalPages){
+  currentPage += dir;
+
+  if(currentPage < 1) currentPage = 1;
+  if(currentPage > totalPages) currentPage = totalPages;
+
+  applyFilterWithoutReset();
+}
+</script>

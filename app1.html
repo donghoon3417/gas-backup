@@ -1,0 +1,198 @@
+<script>
+
+let fullData=[];
+let selectedCar = "";
+let selectedName = "";
+
+// 선택
+function selectCar(btn, car){
+
+  if(selectedCar === car){
+    selectedCar = "";
+    btn.classList.remove("active");
+    localStorage.removeItem("car");
+    return;
+  }
+
+  document.querySelectorAll("#carSection button")
+    .forEach(b => b.classList.remove("active"));
+
+  selectedCar = car;
+  btn.classList.add("active");
+
+  localStorage.setItem("car", car);
+}
+
+function selectName(btn, name){
+
+  if(selectedName === name){
+    selectedName = "";
+    btn.classList.remove("active");
+    localStorage.removeItem("name");
+    return;
+  }
+
+  document.querySelectorAll("#nameSection button")
+    .forEach(b => b.classList.remove("active"));
+
+  selectedName = name;
+  btn.classList.add("active");
+
+  localStorage.setItem("name", name);
+}
+
+function save(){
+
+  const btn = document.getElementById("saveBtn");
+
+  const data={
+    car:selectedCar,
+    name:selectedName,
+    start:start.value,
+    end:end.value,
+    km:km.value,
+    note:note.value
+  };
+
+  if(!data.car||!data.name||!data.km){
+    alert("차량,운행자,KM필수 입력");
+    return;
+  }
+
+  // 🔥 버튼 상태 변경
+  btn.innerText = "저장중...";
+  btn.disabled = true;
+  btn.style.background = "#FFC107"
+
+  // 🔥 수정 모드
+  if(window.editIndex !== undefined){
+
+    google.script.run.withSuccessHandler(()=>{
+
+      btn.innerText = "수정 완료!";
+
+      setTimeout(()=>{
+        btn.innerText = "저장";
+        btn.disabled = false;
+        btn.style.background = "#2196F3";
+      },1500);
+
+      window.editIndex = undefined;
+      showList();
+
+    }).updateDriveLog(window.editIndex, data);
+
+    return;
+  }
+
+  // 🔥 신규 저장
+  google.script.run.withSuccessHandler(()=>{
+
+    btn.innerText = "저장 완료!";
+
+    setTimeout(()=>{
+      btn.innerText = "저장";
+      btn.disabled = false;
+      btn.style.background = "#2196F3";
+    },1500);
+
+    showList();
+
+  }).saveDriveLog(data);
+}
+
+// 데이터 호출
+function loadList(){
+  google.script.run.withSuccessHandler(renderList).getAllLogs();
+}
+
+// 렌더링
+function renderList(data){
+
+  fullData = data;
+
+  if(!data || data.length === 0){
+    fullData = [["날짜","차량","이름","출발지","도착지","km","비고"]];
+    drawTable([]);
+    return;
+  }
+
+  drawTable(data.slice(1));
+}
+
+// 화면 전환
+function showForm(){
+  formPage.style.display="block";
+  listPage.style.display="none";
+
+  formBtn.classList.add("active");
+  listBtn.classList.remove("active");
+
+  localStorage.setItem("page","form");
+}
+
+function showList(){
+  formPage.style.display="none";
+  listPage.style.display="block";
+
+  formBtn.classList.remove("active");
+  listBtn.classList.add("active");
+
+  localStorage.setItem("page","list");
+
+  loadList();
+}
+
+// km 체크
+function checkKm(){
+  const btn = document.getElementById("saveBtn");
+  const kmValue = document.getElementById("km").value.trim();
+
+  btn.style.background = kmValue ? "#2196F3" : "#aaa";
+}
+
+// 🔥 초기화 (여기 하나만 존재해야 함)
+window.onload = function(){
+
+  checkKm();
+
+  const page = localStorage.getItem("page");
+
+  if(page === "list"){
+    showList();
+  }else{
+    showForm();
+  }
+
+  // 차량 복원
+  const savedCar = localStorage.getItem("car");
+
+if(savedCar){
+  document.querySelectorAll("#carSection button").forEach(btn=>{
+    const onclickValue = btn.getAttribute("onclick") || "";
+
+    if(onclickValue.includes(savedCar)){
+      btn.classList.add("active");
+      selectedCar = savedCar;
+    }
+  });
+}
+
+  // 이름 복원
+  const savedName = localStorage.getItem("name");
+
+ if(savedName){
+  document.querySelectorAll("#nameSection button").forEach(btn=>{
+    const onclickValue = btn.getAttribute("onclick") || "";
+
+    if(onclickValue.includes(savedName)){
+      btn.classList.add("active");
+      selectedName = savedName;
+    }
+  });
+}
+
+};
+
+</script>
+

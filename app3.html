@@ -1,0 +1,189 @@
+<script>
+function drawTable(data){
+
+  const list = document.getElementById("list");
+
+  const header = [...fullData[0]];
+  header[header.length - 1] = "관리";
+
+  const todayObj = new Date();
+  const today = todayObj.toISOString().split("T")[0];
+
+  const oneYearAgoObj = new Date();
+  oneYearAgoObj.setFullYear(oneYearAgoObj.getFullYear() - 1);
+  const oneYearAgo = oneYearAgoObj.toISOString().split("T")[0];
+
+  const carSet = new Set(fullData.slice(1).map(r => r[1]));
+  const nameSet = new Set(fullData.slice(1).map(r => r[2]));
+
+  const startDateVal = document.getElementById("startDate")?.value || "";
+  const endDateVal = document.getElementById("endDate")?.value || "";
+
+  let html = `
+  <div style="margin-bottom:10px; display:flex; gap:5px; align-items:center; justify-content:center;">
+    <input type="date" id="startDate" value="${startDateVal || oneYearAgo}" onchange="applyFilter()">
+    <span>~</span>
+    <input type="date" id="endDate" value="${endDateVal || today}" onchange="applyFilter()">
+  </div>
+  `;
+
+  html += "<table><thead><tr>";
+
+  header.forEach((cell, colIndex) => {
+
+    let arrow = " ▼";
+    if (sortCol === colIndex) {
+      arrow = sortAsc ? " ▲" : " ▼";
+    }
+
+    if (colIndex === 1) {
+      html += `
+      <th>
+        <span onclick="sortTable(${colIndex})" style="cursor:pointer;">
+          ${cell}${arrow}
+        </span><br>
+        <select onchange="applyFilter()">
+          <option value="">전체</option>
+          ${[...carSet].map(v => `
+            <option value="${v}" ${v === (document.querySelectorAll("th select")[0]?.value || "") ? "selected" : ""}>
+              ${v}
+            </option>
+          `).join("")}
+        </select>
+      </th>`;
+    }
+    else if (colIndex === 2) {
+      html += `
+      <th>
+        <span onclick="sortTable(${colIndex})" style="cursor:pointer;">
+          ${cell}${arrow}
+        </span><br>
+        <select onchange="applyFilter()">
+          <option value="">전체</option>
+          ${[...nameSet].map(v => `
+            <option value="${v}" ${v === (document.querySelectorAll("th select")[1]?.value || "") ? "selected" : ""}>
+              ${v}
+            </option>
+          `).join("")}
+        </select>
+      </th>`;
+    }
+    else {
+      html += `
+      <th>
+        <span onclick="sortTable(${colIndex})" style="cursor:pointer;">
+          ${cell}${arrow}
+        </span><br>
+        <div style="height:24px;"></div>
+      </th>`;
+    }
+
+  });
+
+  html += "</tr></thead><tbody>";
+
+  // 페이지 처리
+  const reversed = data.slice().reverse();
+  const totalPages = Math.ceil(reversed.length / rowsPerPage);
+
+  const start = (currentPage - 1) * rowsPerPage;
+  const pageData = reversed.slice(start, start + rowsPerPage);
+
+  pageData.forEach(row => {
+
+    const realIndex = fullData.indexOf(row);
+
+    html += "<tr>";
+
+    row.forEach((cell, i) => {
+
+      if (i === row.length - 1) {
+        html += `
+        <td>
+          <button onclick="editRow(${realIndex})">수정</button>
+          <button onclick="deleteRow(${realIndex})" style="background:#ff4d4f;color:white;">삭제</button>
+        </td>`;
+      } else {
+        html += `<td style="white-space:normal; word-break:break-all;">${cell}</td>`;
+      }
+
+    });
+
+    html += "</tr>";
+  });
+
+  // 빈 행 채우기
+  for (let i = pageData.length; i < rowsPerPage; i++) {
+    html += "<tr>";
+    for (let j = 0; j < header.length; j++) {
+      html += "<td>&nbsp;</td>";
+    }
+    html += "</tr>";
+  }
+
+  html += "</tbody></table>";
+
+  // 페이지 UI
+  html += `
+  <div style="margin-top:10px; text-align:center;">
+    <button onclick="changePage(-1, ${totalPages})">◀</button>
+    <span>${currentPage} / ${totalPages || 1}</span>
+    <button onclick="changePage(1, ${totalPages})">▶</button>
+  </div>
+  `;
+
+  list.innerHTML = html;
+}
+
+
+// ==========================
+// 수정 (중복 제거 완료 버전)
+// ==========================
+function editRow(rowIndex){
+
+  const row = fullData[rowIndex];
+
+  selectedCar = row[1];
+  selectedName = row[2];
+
+  start.value = row[3];
+  end.value = row[4];
+  km.value = row[5].replace(" km", "");
+  note.value = row[6];
+
+  // 차량 버튼 active
+  document.querySelectorAll("#carSection button").forEach(btn => {
+    const onclickValue = btn.getAttribute("onclick") || "";
+    btn.classList.toggle("active", onclickValue.includes(row[1]));
+  });
+
+  // 이름 버튼 active
+  document.querySelectorAll("#nameSection button").forEach(btn => {
+    const onclickValue = btn.getAttribute("onclick") || "";
+    btn.classList.toggle("active", onclickValue.includes(row[2]));
+  });
+
+  window.editIndex = rowIndex;
+
+  // km 자동 계산 (존재할 때만 실행)
+  if (typeof checkKm === "function") {
+    checkKm();
+  }
+
+  showForm();
+}
+
+
+// ==========================
+// 삭제
+// ==========================
+function deleteRow(rowIndex){
+
+  if (!confirm("삭제하시겠습니까?")) return;
+
+  google.script.run.withSuccessHandler(() => {
+    alert("삭제 완료");
+    loadList();
+  }).deleteRow(rowIndex);
+}
+</script>
